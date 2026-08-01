@@ -3,6 +3,13 @@ package com.senin.vaultsync
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.ScrollView
+import android.widget.TextView
+import android.widget.LinearLayout
+import android.widget.Button as AndroidButton
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -18,6 +25,8 @@ import com.senin.vaultsync.data.SettingsStore
 import com.senin.vaultsync.sync.SyncForegroundService
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 
 class MainActivity : ComponentActivity() {
 
@@ -26,19 +35,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         CrashHandler.install(this)
-        settingsStore = SettingsStore(applicationContext)
 
+        // Önceki açılışta kaydedilmiş bir çökme var mı? Varsa Compose'a hiç
+        // dokunmadan, düz Android View ile göster (Compose'un kendisi hata
+        // veriyorsa bile bu ekran çalışsın diye).
         val previousCrash = CrashHandler.readLastCrash(this)
+        if (previousCrash != null) {
+            showPlainCrashScreen(previousCrash)
+            return
+        }
 
-        setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    if (previousCrash != null) {
-                        CrashScreen(previousCrash) {
-                            CrashHandler.clear(this@MainActivity)
-                            recreate()
-                        }
-                    } else {
+        // Normal açılışı da try-catch'e alıyoruz: eğer burada bir şey patlarsa
+        // yeniden başlatmayı beklemeden, aynı anda hatayı ekranda gösteririz.
+        try {
+            settingsStore = SettingsStore(applicationContext)
+            setContent {
+                MaterialTheme {
+                    Surface(modifier = Modifier.fillMaxSize()) {
                         VaultScreen(
                             settingsStore = settingsStore,
                             vaultDir = File(getExternalFilesDir(null) ?: filesDir, "vault"),
@@ -49,20 +62,56 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        } catch (t: Throwable) {
+            val sw = StringWriter()
+            t.printStackTrace(PrintWriter(sw))
+            showPlainCrashScreen(sw.toString())
         }
     }
-}
 
-@Composable
-fun CrashScreen(errorText: String, onDismiss: () -> Unit) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Uygulama son açılışta çöktü. Hata detayı:", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(8.dp))
-        Text(errorText, style = MaterialTheme.typography.bodySmall)
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-            Text("Kaydı Temizle ve Devam Et")
+    /** Compose kullanmadan, saf Android View'larla çökme metnini gösterir + kopyalama butonu ekler */
+    private fun showPlainCrashScreen(errorText: String) {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(40, 80, 40, 40)
         }
+
+        val title = TextView(this).apply {
+            text = "VaultSync bir önceki açılışta çöktü. Hata detayı:"
+            textSize = 16f
+            setPadding(0, 0, 0, 24)
+        }
+
+        val body = TextView(this).apply {
+            text = errorText
+            textSize = 12f
+            setTextIsSelectable(true)
+        }
+
+        val copyButton = AndroidButton(this).apply {
+            text = "Hatayı Kopyala"
+            setOnClickListener {
+                val clipboard = getSystemService(ClipboardManager::class.java)
+                clipboard.setPrimaryClip(ClipData.newPlainText("VaultSync hata", errorText))
+                Toast.makeText(this@MainActivity, "Kopyalandı", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val continueButton = AndroidButton(this).apply {
+            text = "Kaydı Temizle ve Devam Et"
+            setOnClickListener {
+                CrashHandler.clear(this@MainActivity)
+                recreate()
+            }
+        }
+
+        layout.addView(title)
+        layout.addView(copyButton)
+        layout.addView(continueButton)
+        layout.addView(body)
+
+        val scrollView = ScrollView(this).apply { addView(layout) }
+        setContentView(scrollView)
     }
 }
 
