@@ -14,8 +14,15 @@ class VaultSyncApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        database = AppDatabase.getInstance(this)
-        createNotificationChannel()
+        CrashHandler.install(this)
+        try {
+            database = AppDatabase.getInstance(this)
+            createNotificationChannel()
+        } catch (e: Exception) {
+            // İlk açılışta bir sorun olsa bile uygulamanın tamamen kapanmasını
+            // değil, MainActivity'nin hata ekranını göstermesini istiyoruz.
+            e.printStackTrace()
+        }
     }
 
     private fun createNotificationChannel() {

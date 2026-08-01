@@ -25,20 +25,43 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CrashHandler.install(this)
         settingsStore = SettingsStore(applicationContext)
+
+        val previousCrash = CrashHandler.readLastCrash(this)
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    VaultScreen(
-                        settingsStore = settingsStore,
-                        vaultDir = File(getExternalFilesDir(null), "vault"),
-                        onSyncNow = {
-                            startForegroundService(Intent(this, SyncForegroundService::class.java))
+                    if (previousCrash != null) {
+                        CrashScreen(previousCrash) {
+                            CrashHandler.clear(this@MainActivity)
+                            recreate()
                         }
-                    )
+                    } else {
+                        VaultScreen(
+                            settingsStore = settingsStore,
+                            vaultDir = File(getExternalFilesDir(null) ?: filesDir, "vault"),
+                            onSyncNow = {
+                                startForegroundService(Intent(this, SyncForegroundService::class.java))
+                            }
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CrashScreen(errorText: String, onDismiss: () -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Uygulama son açılışta çöktü. Hata detayı:", style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
+        Text(errorText, style = MaterialTheme.typography.bodySmall)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+            Text("Kaydı Temizle ve Devam Et")
         }
     }
 }
@@ -53,7 +76,6 @@ fun VaultScreen(
     val config by settingsStore.config.collectAsState(initial = SettingsStore.Config())
 
     var host by remember(config) { mutableStateOf(config.host) }
-    var share by remember(config) { mutableStateOf(config.share) }
     var username by remember(config) { mutableStateOf(config.username) }
     var password by remember(config) { mutableStateOf(config.password) }
     var homeSsid by remember(config) { mutableStateOf(config.homeSsid) }
@@ -72,18 +94,16 @@ fun VaultScreen(
 
         OutlinedTextField(host, { host = it }, label = { Text("Modem IP (ör. 192.168.1.1)") }, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(4.dp))
-        OutlinedTextField(share, { share = it }, label = { Text("Samba paylaşım adı") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(username, { username = it }, label = { Text("FTP kullanıcı adı") }, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(4.dp))
-        OutlinedTextField(username, { username = it }, label = { Text("Samba kullanıcı adı") }, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(4.dp))
-        OutlinedTextField(password, { password = it }, label = { Text("Samba şifresi") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(password, { password = it }, label = { Text("FTP parolası") }, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(4.dp))
         OutlinedTextField(homeSsid, { homeSsid = it }, label = { Text("Ev WiFi adı (SSID)") }, modifier = Modifier.fillMaxWidth())
 
         Spacer(Modifier.height(12.dp))
         Button(onClick = {
             scope.launch {
-                settingsStore.save(SettingsStore.Config(host, share, username, password, homeSsid))
+                settingsStore.save(SettingsStore.Config(host, username, password, homeSsid))
             }
         }, modifier = Modifier.fillMaxWidth()) {
             Text("Ayarları Kaydet")
