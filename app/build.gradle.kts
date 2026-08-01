@@ -22,6 +22,13 @@ android {
         }
     }
 
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/DEPENDENCIES"
+        }
+    }
+
     buildFeatures {
         compose = true
     }
@@ -47,8 +54,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // SMB (paylaşıma bağlanmak için)
-    implementation("eu.agno3.jcifs:jcifs-ng:2.1.10")
+    // FTP (router'da Samba değil FTP servisi var)
+    implementation("commons-net:commons-net:3.11.1")
 
     // Yerel senkron durumu takibi
     implementation("androidx.room:room-runtime:2.6.1")
