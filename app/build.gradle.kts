@@ -30,10 +30,7 @@ android {
     }
 
     buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
+        compose = false
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -45,14 +42,9 @@ android {
 }
 
 dependencies {
-    // Compose
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.activity:activity-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.appcompat:appcompat:1.7.0")
 
     // FTP (router'da Samba değil FTP servisi var)
     implementation("commons-net:commons-net:3.11.1")
