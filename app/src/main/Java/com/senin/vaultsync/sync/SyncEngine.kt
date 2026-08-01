@@ -1,7 +1,7 @@
 package com.senin.vaultsync.sync
 
+import com.senin.vaultsync.data.FtpClient
 import com.senin.vaultsync.data.SettingsStore
-import com.senin.vaultsync.data.SmbClient
 import com.senin.vaultsync.data.SyncManifestDao
 import com.senin.vaultsync.data.SyncManifestEntity
 import java.io.File
@@ -27,7 +27,7 @@ class SyncEngine(
     }
 
     suspend fun run(config: SettingsStore.Config, onProgress: suspend (Progress) -> Unit) {
-        val client = SmbClient(config.host, config.share, config.username, config.password)
+        val client = FtpClient(config.host, config.username, config.password)
         vaultDir.mkdirs()
 
         val knownState = dao.getAll().associateBy { it.relativePath }
