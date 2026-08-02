@@ -14,7 +14,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import com.senin.vaultsync.data.FtpClient
 import com.senin.vaultsync.data.MediaCompressor
@@ -35,7 +35,7 @@ import java.io.StringWriter
  * Kasıtlı olarak Compose, Room, WorkManager, arka plan servisi
  * KULLANILMIYOR — kararlılık için minimum bağımlılık.
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var settingsStore: SettingsStore
     private var currentPath: String = ""
