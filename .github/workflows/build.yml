@@ -20,6 +20,16 @@ jobs:
       - name: Android SDK kur
         uses: android-actions/setup-android@v3
 
+      - name: Benzersiz debug imza anahtarı oluştur
+        run: |
+          mkdir -p ~/.android
+          rm -f ~/.android/debug.keystore
+          keytool -genkeypair -v \
+            -keystore ~/.android/debug.keystore \
+            -storepass android -keypass android \
+            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=$(uuidgen), OU=Kisisel, O=Kisisel, L=Istanbul, S=Istanbul, C=TR"
+
       - name: Gradle kur
         uses: gradle/actions/setup-gradle@v4
 
