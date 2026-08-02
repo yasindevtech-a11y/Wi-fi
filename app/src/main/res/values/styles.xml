@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cihazın kendi sistem temasına güvenmiyoruz; AppCompat kütüphanesi
+         ile birlikte APK'nın İÇİNE gömülen bu temayı kullanıyoruz.
+         Böylece hangi cihazda/ROM'da çalıştığımız fark etmez. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#2D6CDF</item>
+        <item name="colorPrimaryDark">#1B4FB8</item>
+        <item name="colorAccent">#2D6CDF</item>
+    </style>
+</resources>
