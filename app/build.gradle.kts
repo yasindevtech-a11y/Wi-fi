@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.senin.vaultsync"
+    namespace = "com.userapp.ftpmanager"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.aybars.privatedrive2026"
-        minSdk = 26
+        applicationId = "com.userapp.ftpmanager"
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.2"
+        versionName = "1.0"
     }
 
     buildTypes {
@@ -21,32 +21,27 @@ android {
         }
     }
 
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "/META-INF/DEPENDENCIES"
-        }
-    }
-
-    buildFeatures {
-        compose = false
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    buildFeatures {
+        viewBinding = false
+    }
 }
 
-// Kasitli olarak SADECE su bagimliliklar var:
-// - appcompat/core-ktx: temel Android uyumlulugu
-// - commons-net: FTP istemcisi
-// Room, WorkManager, DataStore, Compose YOK - daha az bagimlilik,
-// daha az uyumsuzluk riski, daha kucuk/daha az "supheli" APK.
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("commons-net:commons-net:3.11.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("commons-net:commons-net:3.9.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.documentfile:documentfile:1.0.1")
 }
