@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "VaultSync"
+rootProject.name = "FtpManager"
 include(":app")
