@@ -1,3 +1,8 @@
 <resources>
-    <style name="Theme.FtpManager" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+    <!-- DayNight yerine sabit Light kullanılıyor: telefon karanlık modda olsa bile
+         yazılar hep koyu, arka planlar hep açık renk kalır (beyaz üstüne beyaz yazı sorunu olmaz) -->
+    <style name="Theme.FtpManager" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:textColorPrimary">#000000</item>
+        <item name="android:textColor">#000000</item>
+    </style>
 </resources>
