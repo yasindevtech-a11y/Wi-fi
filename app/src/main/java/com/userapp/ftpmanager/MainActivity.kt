@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnRename).setOnClickListener { showRenameDialog() }
         findViewById<Button>(R.id.btnPickFolder).setOnClickListener { folderPicker.launch(null) }
         findViewById<Button>(R.id.btnSyncNow).setOnClickListener { savePrefs(); doSyncNow() }
+        findViewById<Button>(R.id.btnUp).setOnClickListener { navigateUp() }
 
         cbAutoSync.setOnCheckedChangeListener { _, checked ->
             prefs.setAutoSync(checked)
@@ -109,9 +110,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         listView.setOnItemClickListener { _, _, position, _ ->
-            selectedFile = currentFiles.getOrNull(position)
-            tvSelected.text = "Seçili dosya: ${selectedFile?.name ?: "yok"}"
+            val f = currentFiles.getOrNull(position) ?: return@setOnItemClickListener
+            if (f.isDirectory) {
+                navigateInto(f.name)
+            } else {
+                selectedFile = f
+                tvSelected.text = "Seçili dosya: ${f.name}"
+            }
         }
+    }
+
+    private fun navigateInto(folderName: String) {
+        val base = remotePath().trimEnd('/')
+        val newPath = if (base.isEmpty()) "/$folderName" else "$base/$folderName"
+        etPath.setText(newPath)
+        selectedFile = null
+        tvSelected.text = "Seçili dosya: yok"
+        savePrefs()
+        doList()
+    }
+
+    private fun navigateUp() {
+        val base = remotePath().trimEnd('/')
+        if (base.isEmpty() || base == "/") {
+            Toast.makeText(this, "Zaten en üst klasördesiniz", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val lastSlash = base.lastIndexOf('/')
+        val parent = if (lastSlash <= 0) "/" else base.substring(0, lastSlash)
+        etPath.setText(parent)
+        selectedFile = null
+        tvSelected.text = "Seçili dosya: yok"
+        savePrefs()
+        doList()
     }
 
     private fun loadPrefs() {
