@@ -61,6 +61,13 @@
         android:text="/"
         android:inputType="text"/>
 
+    <Button
+        android:id="@+id/btnUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="⬆ Bir Üst Klasöre Çık"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -85,7 +92,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dosyalar (seçmek için dokun)"
+        android:text="Dosyalar (klasöre dokun = içine gir, dosyaya dokun = seç)"
         android:textStyle="bold"
         android:layout_marginTop="12dp"/>
 
