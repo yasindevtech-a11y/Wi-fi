@@ -4,15 +4,18 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ArrayAdapter
+import android.view.Gravity
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -27,8 +30,9 @@ import org.apache.commons.net.ftp.FTPFile
 import org.apache.commons.net.ftp.FTPReply
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FileActionListener {
 
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var etHost: EditText
     private lateinit var etPort: EditText
     private lateinit var etUser: EditText
@@ -38,13 +42,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSelected: TextView
     private lateinit var tvLog: TextView
     private lateinit var tvLocalFolder: TextView
+    private lateinit var tvBreadcrumb: TextView
     private lateinit var cbAutoSync: CheckBox
+    private lateinit var logContainer: ScrollView
+    private lateinit var btnToggleLog: TextView
 
     private lateinit var prefs: Prefs
+    private lateinit var fileAdapter: FileAdapter
 
     private var currentFiles: List<FTPFile> = emptyList()
     private var selectedFile: FTPFile? = null
     private var localFolderUri: Uri? = null
+    private var logVisible = false
 
     private fun host() = etHost.text.toString().trim()
     private fun port() = etPort.text.toString().trim().ifEmpty { "21" }.toIntOrNull() ?: 21
@@ -81,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         prefs = Prefs(this)
 
+        drawerLayout = findViewById(R.id.drawerLayout)
         etHost = findViewById(R.id.etHost)
         etPort = findViewById(R.id.etPort)
         etUser = findViewById(R.id.etUser)
@@ -90,40 +100,104 @@ class MainActivity : AppCompatActivity() {
         tvSelected = findViewById(R.id.tvSelected)
         tvLog = findViewById(R.id.tvLog)
         tvLocalFolder = findViewById(R.id.tvLocalFolder)
+        tvBreadcrumb = findViewById(R.id.tvBreadcrumb)
         cbAutoSync = findViewById(R.id.cbAutoSync)
+        logContainer = findViewById(R.id.logContainer)
+        btnToggleLog = findViewById(R.id.btnToggleLog)
+
+        fileAdapter = FileAdapter(this, emptyList(), this)
+        listView.adapter = fileAdapter
 
         loadPrefs()
+        tvBreadcrumb.text = remotePath()
 
-        findViewById<Button>(R.id.btnConnect).setOnClickListener { savePrefs(); doList() }
+        findViewById<TextView>(R.id.btnMenu).setOnClickListener {
+            drawerLayout.openDrawer(Gravity.START)
+        }
+        findViewById<TextView>(R.id.btnUp).setOnClickListener { navigateUp() }
+        findViewById<Button>(R.id.btnGo).setOnClickListener { savePrefs(); tvBreadcrumb.text = remotePath(); doList() }
+        findViewById<Button>(R.id.btnConnect).setOnClickListener { savePrefs(); tvBreadcrumb.text = remotePath(); doList(); drawerLayout.closeDrawers() }
         findViewById<Button>(R.id.btnList).setOnClickListener { savePrefs(); doList() }
         findViewById<Button>(R.id.btnUpload).setOnClickListener { uploadPicker.launch("*/*") }
-        findViewById<Button>(R.id.btnDownload).setOnClickListener { startDownload() }
-        findViewById<Button>(R.id.btnDelete).setOnClickListener { doDelete() }
-        findViewById<Button>(R.id.btnRename).setOnClickListener { showRenameDialog() }
-        findViewById<Button>(R.id.btnPickFolder).setOnClickListener { folderPicker.launch(null) }
         findViewById<Button>(R.id.btnSyncNow).setOnClickListener { savePrefs(); doSyncNow() }
-        findViewById<Button>(R.id.btnUp).setOnClickListener { navigateUp() }
+        findViewById<Button>(R.id.btnPickFolder).setOnClickListener { folderPicker.launch(null) }
+        btnToggleLog.setOnClickListener { toggleLog() }
 
         cbAutoSync.setOnCheckedChangeListener { _, checked ->
             prefs.setAutoSync(checked)
             if (checked) scheduleAutoSync() else cancelAutoSync()
         }
-
-        listView.setOnItemClickListener { _, _, position, _ ->
-            val f = currentFiles.getOrNull(position) ?: return@setOnItemClickListener
-            if (f.isDirectory) {
-                navigateInto(f.name)
-            } else {
-                selectedFile = f
-                tvSelected.text = "Seçili dosya: ${f.name}"
-            }
-        }
     }
+
+    private fun toggleLog() {
+        logVisible = !logVisible
+        logContainer.visibility = if (logVisible) View.VISIBLE else View.GONE
+        btnToggleLog.text = if (logVisible) "Günlük ▴" else "Günlük ▾"
+    }
+
+    // ---------- FileActionListener ----------
+    override fun onOpenFolder(f: FTPFile) = navigateInto(f.name)
+
+    override fun onSelect(f: FTPFile) {
+        selectedFile = f
+        tvSelected.text = "Seçili dosya: ${f.name}"
+    }
+
+    override fun onDownload(f: FTPFile) {
+        selectedFile = f
+        startDownload()
+    }
+
+    override fun onDelete(f: FTPFile) {
+        selectedFile = f
+        doDelete()
+    }
+
+    override fun onRename(f: FTPFile) {
+        selectedFile = f
+        showRenameDialog()
+    }
+
+    override fun onMove(f: FTPFile) {
+        val base = remotePath().trimEnd('/')
+        val currentFull = "$base/${f.name}"
+        val input = EditText(this)
+        input.setText(currentFull)
+        AlertDialog.Builder(this)
+            .setTitle("Taşı: yeni tam yol")
+            .setMessage("Dosyanın taşınacağı tam yolu ve adını yaz")
+            .setView(input)
+            .setPositiveButton("Taşı") { _, _ ->
+                val newPath = input.text.toString().trim()
+                if (newPath.isNotEmpty()) doMove(f, currentFull, newPath)
+            }
+            .setNegativeButton("Vazgeç", null)
+            .show()
+    }
+
+    override fun onCopy(f: FTPFile) {
+        val base = remotePath().trimEnd('/')
+        val currentFull = "$base/${f.name}"
+        val input = EditText(this)
+        input.setText(currentFull)
+        AlertDialog.Builder(this)
+            .setTitle("Kopyala: yeni tam yol")
+            .setMessage("Kopyanın oluşturulacağı tam yolu ve adını yaz")
+            .setView(input)
+            .setPositiveButton("Kopyala") { _, _ ->
+                val newPath = input.text.toString().trim()
+                if (newPath.isNotEmpty()) doCopy(f, currentFull, newPath)
+            }
+            .setNegativeButton("Vazgeç", null)
+            .show()
+    }
+    // -----------------------------------------
 
     private fun navigateInto(folderName: String) {
         val base = remotePath().trimEnd('/')
         val newPath = if (base.isEmpty()) "/$folderName" else "$base/$folderName"
         etPath.setText(newPath)
+        tvBreadcrumb.text = newPath
         selectedFile = null
         tvSelected.text = "Seçili dosya: yok"
         savePrefs()
@@ -139,6 +213,7 @@ class MainActivity : AppCompatActivity() {
         val lastSlash = base.lastIndexOf('/')
         val parent = if (lastSlash <= 0) "/" else base.substring(0, lastSlash)
         etPath.setText(parent)
+        tvBreadcrumb.text = parent
         selectedFile = null
         tvSelected.text = "Seçili dosya: yok"
         savePrefs()
@@ -167,7 +242,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun scheduleAutoSync() {
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED) // sadece Wi-Fi, mobil veri harcamaz
+            .setRequiredNetworkType(NetworkType.UNMETERED)
             .build()
         val request = PeriodicWorkRequestBuilder<SyncWorker>(6, TimeUnit.HOURS)
             .setConstraints(constraints)
@@ -188,7 +263,7 @@ class MainActivity : AppCompatActivity() {
     private fun doSyncNow() {
         val uri = localFolderUri
         if (uri == null) {
-            Toast.makeText(this, "Önce yerel klasör seçin", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Önce yan menüden yerel klasör seçin", Toast.LENGTH_SHORT).show()
             return
         }
         lifecycleScope.launch {
@@ -250,8 +325,8 @@ class MainActivity : AppCompatActivity() {
             }
             if (files != null) {
                 currentFiles = files
-                val names = files.map { (if (it.isDirectory) "[KLASÖR] " else "") + it.name }
-                listView.adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_list_item_1, names)
+                fileAdapter.update(files)
+                tvBreadcrumb.text = remotePath()
                 log("Listeleme tamamlandı: ${files.size} öğe")
             }
         }
@@ -381,6 +456,42 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             log(if (ok) "Ad değiştirildi: ${f.name} -> $newName" else "Ad değiştirme başarısız")
+            if (ok) doList()
+        }
+    }
+
+    private fun doMove(f: FTPFile, oldPath: String, newPath: String) {
+        lifecycleScope.launch {
+            log("Taşınıyor: ${f.name}")
+            val ok = withContext(Dispatchers.IO) {
+                val client = openClient() ?: return@withContext false
+                try {
+                    FtpOps.move(client, oldPath, newPath)
+                } finally {
+                    try { client.logout(); client.disconnect() } catch (_: Exception) {}
+                }
+            }
+            log(if (ok) "Taşındı: $newPath" else "Taşıma başarısız")
+            if (ok) doList()
+        }
+    }
+
+    private fun doCopy(f: FTPFile, oldPath: String, newPath: String) {
+        lifecycleScope.launch {
+            log("Kopyalanıyor: ${f.name}")
+            val ok = withContext(Dispatchers.IO) {
+                val client = openClient() ?: return@withContext false
+                try {
+                    if (f.isDirectory) {
+                        FtpOps.copyDir(this@MainActivity, client, oldPath, newPath) { msg -> log(msg) }
+                    } else {
+                        FtpOps.copyFile(this@MainActivity, client, oldPath, newPath)
+                    }
+                } finally {
+                    try { client.logout(); client.disconnect() } catch (_: Exception) {}
+                }
+            }
+            log(if (ok) "Kopyalandı: $newPath" else "Kopyalama başarısız")
             if (ok) doList()
         }
     }
