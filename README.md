@@ -39,6 +39,13 @@ Basit bir Android FTP istemcisi: bağlan, listele, yükle, indir, sil, yeniden a
   (veya Wi-Fi'ye bağlanınca otomatik olarak) modemdeki USB'de ne varsa telefona yeniden iner —
   yerel kopya böylece kendini tazeler.
 
+## Yeni arayüz (dosya gezgini gibi)
+
+- **☰ menü** (sol üstte): sunucu bilgileri (host/port/kullanıcı/şifre) ve senkron ayarları artık burada, ana ekranı karıştırmıyor.
+- Ana ekran artık gerçek bir dosya gezgini: klasöre **dokun = içine gir**, üstte hangi klasörde olduğun yazar, **⬆** ile bir üst klasöre çıkarsın.
+- Her dosya/klasör satırının sağındaki **⋮** menüsünden: İçine Gir / İndir, Yeniden Adlandır, **Taşı**, **Kopyala**, Sil işlemlerine tek dokunuşla ulaşırsın.
+- Alt kısımdaki "Günlük ▾" yazısına dokunursan işlem geçmişi (log) açılır/kapanır — normalde gizli, ekran sade kalır.
+
 ## Not
 
 Modemin USB depolamasında FTP servisinin ve bir kullanıcı/şifresinin, modemin
