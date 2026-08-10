@@ -1,193 +1,272 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="FTP Sunucu Bilgileri"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:paddingBottom="6dp"/>
-
-    <EditText
-        android:id="@+id/etHost"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Sunucu / IP (ör. 192.168.1.1)"
-        android:inputType="text"/>
-
-    <EditText
-        android:id="@+id/etPort"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Port (varsayılan 21)"
-        android:inputType="number"/>
-
-    <EditText
-        android:id="@+id/etUser"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Kullanıcı adı"
-        android:inputType="text"/>
-
-    <EditText
-        android:id="@+id/etPass"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Şifre"
-        android:inputType="textPassword"/>
-
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Bağlan ve Listele"/>
-
-    <EditText
-        android:id="@+id/etPath"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Uzak klasör yolu (ör. /)"
-        android:text="/"
-        android:inputType="text"/>
-
-    <Button
-        android:id="@+id/btnUp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="⬆ Bir Üst Klasöre Çık"/>
-
+    <!-- ANA EKRAN: dosya gezgini -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="6dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnList"
-            android:layout_width="0dp"
+        <!-- Üst bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Listele"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#5A00E0"
+            android:padding="10dp">
 
-        <Button
-            android:id="@+id/btnUpload"
-            android:layout_width="0dp"
+            <TextView
+                android:id="@+id/btnMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☰"
+                android:textSize="24sp"
+                android:textColor="#FFFFFF"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"/>
+
+            <TextView
+                android:id="@+id/tvBreadcrumb"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Bağlı değil"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:maxLines="1"
+                android:ellipsize="start"
+                android:paddingStart="6dp"/>
+
+            <TextView
+                android:id="@+id/btnUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⬆"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:padding="8dp"
+                android:clickable="true"
+                android:focusable="true"/>
+        </LinearLayout>
+
+        <!-- Yol düzenleme -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="6dp">
+
+            <EditText
+                android:id="@+id/etPath"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="/usb1_1"
+                android:text="/"
+                android:textSize="13sp"
+                android:inputType="text"/>
+
+            <Button
+                android:id="@+id/btnGo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Git"
+                style="?android:attr/buttonStyleSmall"/>
+        </LinearLayout>
+
+        <!-- Hızlı işlemler -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="4dp">
+
+            <Button
+                android:id="@+id/btnList"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Yenile"
+                style="?android:attr/buttonStyleSmall"/>
+
+            <Button
+                android:id="@+id/btnUpload"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Yükle"
+                style="?android:attr/buttonStyleSmall"/>
+
+            <Button
+                android:id="@+id/btnSyncNow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Senkronize"
+                style="?android:attr/buttonStyleSmall"/>
+        </LinearLayout>
+
+        <!-- Dosya listesi (kalan tüm alanı kaplar) -->
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="Yükle"/>
+            android:divider="#E0E0E0"
+            android:dividerHeight="1dp"/>
+
+        <!-- Alt durum + günlük -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F5F5F5"
+            android:padding="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvSelected"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Seçili dosya: yok"
+                    android:textSize="12sp"/>
+
+                <TextView
+                    android:id="@+id/btnToggleLog"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Günlük ▾"
+                    android:textSize="12sp"
+                    android:padding="6dp"
+                    android:clickable="true"
+                    android:focusable="true"/>
+            </LinearLayout>
+
+            <ScrollView
+                android:id="@+id/logContainer"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvLog"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textIsSelectable="true"
+                    android:textSize="11sp"
+                    android:text=""/>
+            </ScrollView>
+        </LinearLayout>
+
     </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Dosyalar (klasöre dokun = içine gir, dosyaya dokun = seç)"
-        android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
+    <!-- YAN MENÜ: bağlantı ayarları ve senkron -->
+    <ScrollView
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#FFFFFF"
+        android:elevation="8dp">
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_marginTop="4dp"/>
-
-    <TextView
-        android:id="@+id/tvSelected"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Seçili dosya: yok"
-        android:layout_marginTop="6dp"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="6dp">
-
-        <Button
-            android:id="@+id/btnDownload"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="İndir"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <Button
-            android:id="@+id/btnDelete"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Sil"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FTP Sunucu Bilgileri"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:paddingBottom="6dp"/>
 
-        <Button
-            android:id="@+id/btnRename"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Ad Değiştir"/>
-    </LinearLayout>
+            <EditText
+                android:id="@+id/etHost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Sunucu / IP (ör. 192.168.1.1)"
+                android:inputType="text"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Telefonda Senkronizasyon Klasörü"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"/>
+            <EditText
+                android:id="@+id/etPort"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Port (varsayılan 21)"
+                android:inputType="number"/>
 
-    <TextView
-        android:id="@+id/tvLocalFolder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Seçili klasör: yok"
-        android:layout_marginTop="4dp"/>
+            <EditText
+                android:id="@+id/etUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Kullanıcı adı"
+                android:inputType="text"/>
 
-    <Button
-        android:id="@+id/btnPickFolder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Yerel Klasör Seç"/>
+            <EditText
+                android:id="@+id/etPass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Şifre"
+                android:inputType="textPassword"/>
 
-    <Button
-        android:id="@+id/btnSyncNow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="Şimdi Senkronize Et"/>
+            <Button
+                android:id="@+id/btnConnect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Bağlan ve Listele"/>
 
-    <CheckBox
-        android:id="@+id/cbAutoSync"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Otomatik senkronizasyon (yalnızca Wi-Fi'de, ~6 saatte bir)"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Günlük / Durum"
-        android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Telefonda Senkronizasyon Klasörü"
+                android:textStyle="bold"/>
 
-    <TextView
-        android:id="@+id/tvLog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="120dp"
-        android:background="#EEEEEE"
-        android:padding="8dp"
-        android:textIsSelectable="true"
-        android:text=""/>
+            <TextView
+                android:id="@+id/tvLocalFolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Seçili klasör: yok"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"/>
 
-</LinearLayout>
-</ScrollView>
+            <Button
+                android:id="@+id/btnPickFolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Yerel Klasör Seç"/>
+
+            <CheckBox
+                android:id="@+id/cbAutoSync"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Otomatik senkron (yalnızca Wi-Fi)"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.drawerlayout.widget.DrawerLayout>
